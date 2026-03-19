@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>滚动轴承故障智能预警系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css"/>
+  <link rel="stylesheet" href="/css/app.css"/>
+</head>
+<body>
+  <div th:fragment="header" class="layui-header ew-header">
+    <div class="ew-header-inner">
+      <div>
+        <img src="../logo.png" alt="Logo">
+      </div>
+      <div class="ew-user-area">
+        <span class="ew-username" th:text="${currentUsername}">用户名</span>
+        <a href="javascript:" id="logoutBtn" class="layui-btn layui-btn-sm ew-logout-btn">退出</a>
+      </div>
+    </div>
+  </div>
+  <div th:fragment="sidebar" class="layui-side ew-side">
+    <ul class="layui-nav layui-nav-tree ew-nav" lay-filter="nav">
+      <li class="layui-nav-item"><a th:href="@{/}">首页</a></li>
+      <li class="layui-nav-item"><a th:href="@{/predict}">故障预测</a></li>
+      <li class="layui-nav-item"><a th:href="@{/history}">预测历史</a></li>
+      <li class="layui-nav-item">
+        <a href="javascript:;">工具</a>
+        <dl class="layui-nav-child">
+          <dd><a style="color: #31415f" th:href="@{/tools/logs}">日志</a></dd>
+          <dd><a style="color: #31415f" th:href="@{/tools/assistant}">AI助理</a></dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+  <div th:fragment="footer" class="layui-footer ew-footer">
+    基于1D-CNN的滚动轴承故障智能预警系统-@sxk
+  </div>
+  <script th:fragment="scripts" src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+  <script th:fragment="logoutScript">
+    layui.use(['element'], function(){
+      var element = layui.element;
+      var path = location.pathname;
+      document.querySelectorAll('.ew-nav li, .ew-nav dd').forEach(function(node){
+        node.classList.remove('layui-this');
+      });
+      document.querySelectorAll('.ew-nav a[href]').forEach(function(a){
+        var href = a.getAttribute('href');
+        if (href && path === href) {
+          var dd = a.parentElement;
+          dd.classList.add('layui-this');
+          var parentLi = dd.closest('.layui-nav-item');
+          if (parentLi) parentLi.classList.add('layui-nav-itemed');
+        }
+      });
+      element.render('nav');
+    });
+    document.getElementById('logoutBtn').onclick = function(){
+      var token = (document.cookie.match(/token=([^;]*)/) || [])[1];
+      fetch('/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'token=' + (token || '') })
+        .then(function(){ document.cookie = 'token=;path=/;max-age=0'; location.href = '/login'; });
+    };
+  </script>
+</body>
+</html>

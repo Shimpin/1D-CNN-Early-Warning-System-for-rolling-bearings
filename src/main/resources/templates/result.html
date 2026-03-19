@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>预测结果 - 滚动轴承故障智能预警系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css"/>
+  <link rel="stylesheet" href="/css/app.css"/>
+  <style>
+    .result-ok { color: #009688; } .result-warn { color: #d4380d; } .result-err { color: #c00; }
+  </style>
+</head>
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <div th:replace="~{fragments/common :: header}"></div>
+    <div th:replace="~{fragments/common :: sidebar}"></div>
+    <div class="layui-body">
+      <div class="ew-page-wrap">
+        <div class="layui-card ew-card">
+          <div class="layui-card-header">预测结果</div>
+          <div class="layui-card-body">
+            <p th:if="${fileName}">文件：<strong th:text="${fileName}"></strong></p>
+            <div th:if="${result.status == 'error'}" class="layui-elem-quote layui-quote-nm result-err" th:text="${result.message}"></div>
+            <div th:if="${result.status == 'success'}">
+              <div th:if="${result.warning}" class="layui-elem-quote layui-quote-nm result-warn">
+                <span class="layui-badge layui-bg-orange">故障预警</span>
+                <span th:text="${result.fault_name}"></span>（置信度：<span th:text="${result.confidence}"></span>）
+              </div>
+              <div th:if="${!result.warning}" class="layui-elem-quote layui-quote-nm result-ok">
+                <span class="layui-badge layui-bg-gray">正常</span>
+                <span th:text="${result.fault_name}"></span>（置信度：<span th:text="${result.confidence}"></span>）
+              </div>
+              <p th:if="${result.warning}" style="margin-top:10px;color:#d4380d;">检测到故障，建议及时检修。</p>
+              <p style="margin-top:15px;">
+                <a th:href="@{/predict}" class="layui-btn">继续预测</a>
+                <a th:href="@{/history}" class="layui-btn layui-btn-primary">预测历史</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div th:replace="~{fragments/common :: footer}"></div>
+  </div>
+  <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+  <script th:replace="~{fragments/common :: logoutScript}"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+.layui-layout-admin .layui-body {
+  left: 220px;
+  top: 64px;
+  bottom: 50px;
+  background: #f4f7fb;
+}
+
+.layui-layout-admin .layui-footer {
+  left: 220px;
+  position: fixed;
+  height: 50px;
+  line-height: 50px;
+}
+
+.ew-header {
+  background: linear-gradient(120deg, #00b09b, #96c93d);
+  box-shadow: 0 6px 18px rgba(22, 41, 88, 0.2);
+}
+
+.ew-header-inner {
+  height: 64px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ew-title {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ew-user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ew-username {
+  color: #e9efff;
+}
+
+.ew-logout-btn {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ew-side {
+  top: 64px;
+  width: 220px;
+  box-shadow: 2px 0 18px rgba(50, 65, 96, 0.12);
+}
+
+.ew-nav {
+  width: 220px;
+  background: #fff;
+  height: 100%;
+}
+
+.ew-nav .layui-nav-item > a {
+  color: #2d3a54 !important;
+  font-weight: 500;
+}
+
+.ew-nav .layui-nav-itemed > a,
+.ew-nav .layui-this > a,
+.ew-nav dd.layui-this > a {
+  color: #2563eb !important;
+}
+
+.ew-nav .layui-nav-child {
+  background: #f6f8ff !important;
+}
+
+.ew-footer {
+  text-align: center;
+  color: #5f6b85;
+  background: #fff;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+
+.ew-page-wrap {
+  padding: 18px 20px 80px 20px;
+}
+
+.ew-card {
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(43, 61, 101, 0.08);
+  border: 0;
+}
+
+.ew-card .layui-card-header {
+  font-weight: 600;
+  color: #2a3c66;
+  border-bottom-color: #edf1fb;
+}
+
+.ew-card .layui-card-body {
+  color: #3a4a6b;
+}
+
+.ew-soft-bg {
+  background: #f8faff;
+  border: 1px solid #eaf0ff;
+  border-radius: 10px;
+}
+
+.ew-stat-chip {
+  display: inline-block;
+  padding: 8px 12px;
+  background: #f8fbff;
+  border: 1px solid #e5edff;
+  border-radius: 10px;
+  margin-right: 10px;
+}
+
+.ew-table .layui-table th {
+  background: #f3f7ff;
+  color: #355081;
+}
+
+.ew-table .layui-table td {
+  color: #31415f;
+}
+
+.ew-answer-box {
+  margin-top: 10px;
+  padding: 12px;
+  min-height: 64px;
+  line-height: 1.7;
+}

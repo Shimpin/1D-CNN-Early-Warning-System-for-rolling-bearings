@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>预测历史 - 滚动轴承故障智能预警系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css"/>
+  <link rel="stylesheet" href="/css/app.css"/>
+</head>
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <div th:replace="~{fragments/common :: header}"></div>
+    <div th:replace="~{fragments/common :: sidebar}"></div>
+    <div class="layui-body">
+      <div class="ew-page-wrap">
+        <div class="layui-card ew-card ew-table">
+          <div class="layui-card-header">预测历史</div>
+          <div class="layui-card-body">
+            <table class="layui-table" th:if="${#lists.size(records) > 0}">
+              <thead><tr>
+                <th>预测时间</th>
+                <th>数据文件名称</th>
+                <th>预测结果</th>
+                <th>预警状态</th>
+              </tr></thead>
+              <tbody>
+                <tr th:each="r : ${records}">
+                  <td th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                  <td th:text="${r.fileName}"></td>
+                  <td th:text="${r.faultName}"></td>
+                  <td>
+                    <span th:if="${r.isWarning}" class="layui-badge layui-bg-orange">故障预警</span>
+                    <span th:if="${!r.isWarning}" class="layui-badge layui-bg-gray">正常</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p th:if="${#lists.isEmpty(records)}" style="color:#999;padding:20px;text-align:center;">暂无预测记录，请先在<a th:href="@{/predict}" style="color:#1e3a5f;">故障预测</a>页面上传数据。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div th:replace="~{fragments/common :: footer}"></div>
+  </div>
+  <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+  <script th:replace="~{fragments/common :: logoutScript}"></script>
+</body>
+</html>

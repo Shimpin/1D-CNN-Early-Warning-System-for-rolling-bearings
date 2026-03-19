@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>工具-日志 - 滚动轴承故障智能预警系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css"/>
+  <link rel="stylesheet" href="/css/app.css"/>
+</head>
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <div th:replace="~{fragments/common :: header}"></div>
+    <div th:replace="~{fragments/common :: sidebar}"></div>
+    <div class="layui-body">
+      <div class="ew-page-wrap">
+        <div class="layui-card ew-card ew-table">
+          <div class="layui-card-header">检测日志</div>
+          <div class="layui-card-body">
+            <form class="layui-form" id="searchForm">
+              <div class="layui-form-item">
+                <div class="layui-inline">
+                  <label class="layui-form-label" style="width:auto;">开始时间</label>
+                  <div class="layui-input-inline">
+                    <input type="text" id="startTime" placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off" class="layui-input"/>
+                  </div>
+                </div>
+                <div class="layui-inline">
+                  <label class="layui-form-label" style="width:auto;">结束时间</label>
+                  <div class="layui-input-inline">
+                    <input type="text" id="endTime" placeholder="yyyy-MM-dd HH:mm:ss" autocomplete="off" class="layui-input"/>
+                  </div>
+                </div>
+                <div class="layui-inline">
+                  <button type="button" id="searchBtn" class="layui-btn">搜索</button>
+                  <button type="button" id="resetBtn" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+              </div>
+            </form>
+
+            <table class="layui-table">
+              <thead><tr><th style="width:230px;">操作时间</th><th style="width:140px;">操作类型</th><th>操作结果</th></tr></thead>
+              <tbody id="logTbody"></tbody>
+            </table>
+            <p id="emptyText" style="display:none;color:#8e9ab3;text-align:center;padding:20px 0;">暂无日志数据</p>
+            <div id="pager" style="text-align:right;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div th:replace="~{fragments/common :: footer}"></div>
+  </div>
+
+  <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+  <script th:replace="~{fragments/common :: logoutScript}"></script>
+  <script>
+    layui.use(['laydate', 'laypage', 'layer'], function(){
+      var laydate = layui.laydate, laypage = layui.laypage, layer = layui.layer;
+      laydate.render({ elem: '#startTime', type: 'datetime' });
+      laydate.render({ elem: '#endTime', type: 'datetime' });
+
+      var state = { page: 1, size: 20 };
+
+      function renderRows(rows) {
+        var tbody = document.getElementById('logTbody');
+        var empty = document.getElementById('emptyText');
+        tbody.innerHTML = '';
+        if (!rows || !rows.length) {
+          empty.style.display = 'block';
+          return;
+        }
+        empty.style.display = 'none';
+        rows.forEach(function(row){
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + (row.operationTime || '-') + '</td>' +
+            '<td>' + (row.operationType || '-') + '</td>' +
+            '<td>' + (row.operationResult || '-') + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function load() {
+        var st = document.getElementById('startTime').value.trim();
+        var et = document.getElementById('endTime').value.trim();
+        var params = new URLSearchParams();
+        if (st) params.append('startTime', st);
+        if (et) params.append('endTime', et);
+        params.append('page', state.page);
+        params.append('size', state.size);
+        var loadIdx = layer.load(1);
+        fetch('/api/tools/logs?' + params.toString(), { credentials: 'include' })
+          .then(function(r){ return r.json(); })
+          .then(function(res){
+            layer.close(loadIdx);
+            if (res.code !== 200 || !res.data) {
+              layer.msg(res.msg || '查询失败', { icon: 2 });
+              return;
+            }
+            var d = res.data;
+            renderRows(d.rows || []);
+            laypage.render({
+              elem: 'pager',
+              count: Number(d.total || 0),
+              limit: Number(d.size || 20),
+              curr: Number(d.page || 1),
+              layout: ['count', 'prev', 'page', 'next', 'skip'],
+              jump: function(obj, first) {
+                if (!first) {
+                  state.page = obj.curr;
+                  load();
+                }
+              }
+            });
+          })
+          .catch(function(){
+            layer.close(loadIdx);
+            layer.msg('请求失败', { icon: 2 });
+          });
+      }
+
+      document.getElementById('searchBtn').onclick = function(){
+        state.page = 1;
+        load();
+      };
+      document.getElementById('resetBtn').onclick = function(){
+        document.getElementById('startTime').value = '';
+        document.getElementById('endTime').value = '';
+        state.page = 1;
+        load();
+      };
+      load();
+    });
+  </script>
+</body>
+</html>

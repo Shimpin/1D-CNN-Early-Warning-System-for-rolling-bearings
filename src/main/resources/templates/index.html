@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>首页 - 滚动轴承故障智能预警系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css"/>
+  <link rel="stylesheet" href="/css/app.css"/>
+  <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+  <style>.chart-box { width: 100%; height: 320px; }</style>
+</head>
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <div th:replace="~{fragments/common :: header}"></div>
+    <div th:replace="~{fragments/common :: sidebar}"></div>
+    <div class="layui-body">
+      <div class="ew-page-wrap">
+        <div class="layui-card ew-card" style="margin-bottom: 15px;">
+        </div>
+        <div class="layui-row layui-col-space15">
+          <div class="layui-col-md6">
+            <div class="layui-card ew-card">
+              <div class="layui-card-header">故障类型占比</div>
+              <div class="layui-card-body"><div id="chartPie" class="chart-box"></div></div>
+            </div>
+          </div>
+          <div class="layui-col-md6">
+            <div class="layui-card ew-card">
+              <div class="layui-card-header">近期预测次数（近7天）</div>
+              <div class="layui-card-body"><div id="chartLine" class="chart-box"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="layui-card ew-card">
+          <div class="layui-card-header">故障预警数量</div>
+          <div class="layui-card-body">
+            <div id="chartBar" class="chart-box"></div>
+            <div style="margin-top: 1px; text-align: center;">
+              <div style="display: inline-block; margin: 0 20px;">
+                <strong>正常分类:</strong> <span id="normalCount" style="color: #5FB878; font-size: 18px;">0</span>
+              </div>
+              <div style="display: inline-block; margin: 0 20px;">
+                <strong>故障预警:</strong> <span id="warningCount" style="color: #FF5722; font-size: 18px;">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div th:replace="~{fragments/common :: footer}"></div>
+  </div>
+  <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+  <script th:replace="~{fragments/common :: logoutScript}"></script>
+  <script>
+    layui.use(['layer'], function(){
+      var layer = layui.layer;
+      var loadIdx = layer.load(1);
+      fetch('/api/stats/charts', { credentials: 'include' })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          layer.close(loadIdx);
+          if (res.code !== 200 || !res.data) return;
+          var d = res.data;
+          if (d.pie && d.pie.length) {
+            var pie = echarts.init(document.getElementById('chartPie'));
+            pie.setOption({
+              tooltip: { trigger: 'item' },
+              legend: { top: 0 },
+              series: [{ type: 'pie', radius: ['40%', '70%'], data: d.pie, itemStyle: { borderRadius: 6 } }]
+            });
+          }
+          if (d.line && d.line.dates) {
+            var line = echarts.init(document.getElementById('chartLine'));
+            line.setOption({
+              tooltip: { trigger: 'axis' },
+              xAxis: { type: 'category', data: d.line.dates },
+              yAxis: { type: 'value' },
+              series: [{ type: 'line', data: d.line.values, smooth: true, areaStyle: {} }]
+            });
+          }
+          if (d.bar && d.bar.length) {
+            var bar = echarts.init(document.getElementById('chartBar'));
+            bar.setOption({
+              tooltip: { trigger: 'axis' },
+              xAxis: { type: 'category', data: d.bar.map(function(x){ return x.name; }) },
+              yAxis: { type: 'value' },
+              series: [{ type: 'bar', data: d.bar.map(function(x){ return x.value; }), barMaxWidth: 48, itemStyle: { borderRadius: [8, 8, 0, 0] } }]
+            });
+
+            // 更新统计数据
+            var normalCount = 0;
+            var warningCount = 0;
+            d.bar.forEach(function(item) {
+              if (item.name === '正常') {
+                normalCount = item.value;
+              } else {
+                warningCount += item.value;
+              }
+            });
+            document.getElementById('normalCount').innerText = normalCount;
+            document.getElementById('warningCount').innerText = warningCount;
+          }
+        })
+        .catch(function(){ layer.close(loadIdx); });
+    });
+  </script>
+</body>
+</html>

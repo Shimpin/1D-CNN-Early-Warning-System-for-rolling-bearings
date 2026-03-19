@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>故障预测 - 滚动轴承故障智能预警系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css"/>
+  <link rel="stylesheet" href="/css/app.css"/>
+  <style>
+    #resultBox { display: none; margin-top: 20px; padding: 15px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <div th:replace="~{fragments/common :: header}"></div>
+    <div th:replace="~{fragments/common :: sidebar}"></div>
+    <div class="layui-body">
+      <div class="ew-page-wrap">
+        <div class="layui-card ew-card">
+          <div class="layui-card-header">轴承振动数据上传与预测</div>
+          <div class="layui-card-body">
+            <p style="color:#667ea8;margin-bottom:15px;">支持 txt / csv / mat 格式单文件上传，文件大小不超过 10MB。</p>
+            <div th:if="${error}" class="layui-elem-quote layui-quote-nm" style="color:#c00;" th:text="${error}"></div>
+            <form class="layui-form" id="predictForm">
+              <div class="layui-form-item">
+                <label class="layui-form-label">选择文件</label>
+                <div class="layui-input-block">
+                  <button type="button" class="layui-btn layui-btn-primary" id="pickFile">选择文件</button>
+                  <span id="fileName" style="margin-left:10px;color:#666;">未选择</span>
+                  <input type="file" id="fileInput" name="file" accept=".mat,.txt,.csv" style="display:none;"/>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button type="submit" class="layui-btn" lay-submit lay-filter="predict">开始预测</button>
+                </div>
+              </div>
+            </form>
+            <div id="resultBox" class="ew-soft-bg">
+              <p><strong>预测结果：</strong><span id="resultText"></span></p>
+              <p id="alertMsg" style="color:#d4380d;"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div th:replace="~{fragments/common :: footer}"></div>
+  </div>
+  <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+  <script th:replace="~{fragments/common :: logoutScript}"></script>
+  <script>
+    document.getElementById('pickFile').onclick = function(){ document.getElementById('fileInput').click(); };
+    document.getElementById('fileInput').onchange = function(){
+      var f = this.files[0];
+      document.getElementById('fileName').textContent = f ? f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)' : '未选择';
+    };
+    layui.use(['form', 'layer'], function(){
+      var form = layui.form, layer = layui.layer;
+      form.on('submit(predict)', function(){
+        var fileInput = document.getElementById('fileInput');
+        if (!fileInput.files || !fileInput.files[0]) {
+          layer.msg('请选择要上传的文件', { icon: 2 }); return false;
+        }
+        var f = fileInput.files[0];
+        if (f.size > 10 * 1024 * 1024) {
+          layer.msg('文件大小不能超过 10MB', { icon: 2 }); return false;
+        }
+        var fd = new FormData();
+        fd.append('file', f);
+        var loadIdx = layer.load(1);
+        fetch('/api/predict', { method: 'POST', body: fd, credentials: 'include' })
+          .then(function(r){ return r.json(); })
+          .then(function(res){
+            layer.close(loadIdx);
+            if (res.code !== 200) {
+              layer.msg(res.msg || '预测失败', { icon: 2 }); return false;
+            }
+            var d = res.data;
+            var status = d.status;
+            var msg = d.message || '';
+            var alertMsg = d.alertMessage || '';
+            document.getElementById('resultText').textContent = msg;
+            document.getElementById('alertMsg').textContent = alertMsg;
+            document.getElementById('resultBox').style.display = 'block';
+            if (status === 'success') {
+              layer.alert(alertMsg || msg, { icon: d.warning ? 0 : 1, title: '预测结果' });
+            } else {
+              layer.msg(msg, { icon: 2 });
+            }
+          })
+          .catch(function(e){ layer.close(loadIdx); layer.msg('请求失败', { icon: 2 }); });
+        return false;
+      });
+    });
+  </script>
+</body>
+</html>

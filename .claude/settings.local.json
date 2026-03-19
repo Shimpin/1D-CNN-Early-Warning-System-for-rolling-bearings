@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(\"C:/Users/25356/AppData/Local/Microsoft/WindowsApps/python.exe\" --version)",
+      "Bash(pip list:*)",
+      "Bash(pwd:*)"
+    ]
+  }
+}

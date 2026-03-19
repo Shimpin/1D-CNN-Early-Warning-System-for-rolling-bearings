@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>注册 - 滚动轴承故障智能预警系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.8.18/dist/css/layui.css"/>
+  <style>
+    body { margin: 0; min-height: 100vh; background-image: url("/behind.png") }
+    .reg-shell { display: flex; align-items: center; justify-content: flex-end; min-height: 100vh; padding: 0 70px; }
+    .reg-box { width: 440px; padding: 34px 34px 20px; background: rgba(255,255,255,.92); border: 1px solid #e9efff; border-radius: 16px; box-shadow: 0 14px 40px rgba(49,76,135,.16); }
+    .reg-box h2 { text-align: center; margin: 0 0 10px; color: #23457e; }
+    .desc { text-align:center;color:#6479a2;margin-bottom:24px; }
+    .layui-form-label { width: 86px; color: #48618d; }
+    .layui-input-block { margin-left: 116px; }
+    .layui-input { border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="reg-shell">
+    <div class="reg-box">
+      <h2>用户注册</h2>
+      <p class="desc">创建账号后即可使用系统</p>
+      <form class="layui-form" id="regForm">
+      <div class="layui-form-item">
+        <label class="layui-form-label">用户名</label>
+        <div class="layui-input-block">
+          <input type="text" name="username" required lay-verify="required" placeholder="请输入用户名" class="layui-input"/>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-block">
+          <input type="password" name="password" required lay-verify="required" placeholder="请输入密码" class="layui-input"/>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">确认密码</label>
+        <div class="layui-input-block">
+          <input type="password" name="confirmPassword" required lay-verify="required" placeholder="请再次输入密码" class="layui-input"/>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <div class="layui-input-block">
+          <button type="submit" class="layui-btn layui-btn-fluid" lay-submit lay-filter="reg">注册</button>
+        </div>
+      </div>
+      <div class="layui-form-item" style="text-align:center;">
+        <a th:href="@{/login}" style="color:#1e3a5f;">已有账号？去登录</a>
+      </div>
+      </form>
+    </div>
+  </div>
+  <script src="https://unpkg.com/layui@2.8.18/dist/layui.js"></script>
+  <script>
+    layui.use(['form', 'layer'], function(){
+      var form = layui.form, layer = layui.layer;
+      form.on('submit(reg)', function(data){
+        if (data.field.password !== data.field.confirmPassword) {
+          layer.msg('两次输入的密码不一致', { icon: 2 }); return false;
+        }
+        var loadIdx = layer.load(1);
+        var fd = new FormData();
+        fd.append('username', data.field.username);
+        fd.append('password', data.field.password);
+        fd.append('confirmPassword', data.field.confirmPassword);
+        fetch('/auth/register', { method: 'POST', body: fd })
+          .then(function(r){ return r.json(); })
+          .then(function(res){
+            layer.close(loadIdx);
+            if (res.code === 200) {
+              layer.msg('注册成功，请登录', { icon: 1 }, function(){ location.href = '/login'; });
+            } else {
+              layer.msg(res.msg || '注册失败', { icon: 2 });
+            }
+          })
+          .catch(function(){ layer.close(loadIdx); layer.msg('请求失败', { icon: 2 }); });
+        return false;
+      });
+    });
+  </script>
+</body>
+</html>
